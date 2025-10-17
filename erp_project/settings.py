@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     # mes apps métier
     'core',
     'abonnement',
-    'utilisateur',
+    #'utilisateur',
     'membre',
     'finances',
     'achats',
@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'immobilisation',
     #rest framework
     'rest_framework',
+    # Swagger / OpenAPI
+    'drf_yasg',
+    'utilisateur.apps.UtilisateurConfig',
 ]
 #jwt settings
 REST_FRAMEWORK = {

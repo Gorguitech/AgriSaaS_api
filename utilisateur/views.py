@@ -4,20 +4,9 @@ from rest_framework import serializers
 from .models import Utilisateur
 from django.contrib.auth.hashers import check_password
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    # Indique à SimpleJWT d'utiliser 'email' comme champ d'identification
-    username_field = 'email'
-
-    # Redéfinir explicitement les champs que l'on attend
+class CustomTokenObtainPairSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        token['role'] = user.role
-        return token
 
     def validate(self, attrs):
         email = attrs.get('email')
@@ -31,19 +20,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         except Utilisateur.DoesNotExist:
             raise serializers.ValidationError("Utilisateur introuvable")
 
-        # Vérifie le mot de passe haché stocké dans `mot_de_passe`
         if not check_password(mot_de_passe, utilisateur.mot_de_passe):
             raise serializers.ValidationError("Mot de passe incorrect")
 
-        token = self.get_token(utilisateur)
-        data = {
+        # Création du token manuellement
+        from rest_framework_simplejwt.tokens import RefreshToken
+        token = RefreshToken.for_user(utilisateur)
+        token['email'] = utilisateur.email
+        token['role'] = utilisateur.role.nom if utilisateur.role else None
+
+        return {
             'refresh': str(token),
             'access': str(token.access_token),
             'user': utilisateur.nom_utilisateur,
             'email': utilisateur.email,
-            'role': utilisateur.role,
+            'role': utilisateur.role.nom if utilisateur.role else None,
         }
-        return data
 
 class CustomLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

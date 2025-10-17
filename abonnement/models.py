@@ -12,8 +12,8 @@ class Offre(models.Model):
         return self.nom_offre
 
 class Entreprise(models.Model):
-    nom = models.CharField(max_length=100)
-    email_admin = models.EmailField()
+    nom = models.CharField(max_length=100, unique=True)
+    email_admin = models.EmailField(unique=True)
     pays = models.CharField(max_length=50, blank=True)
     offre = models.ForeignKey(Offre, on_delete=models.CASCADE)
     abonnement_debut = models.DateField()
@@ -23,6 +23,7 @@ class Entreprise(models.Model):
 
     def __str__(self):
         return self.nom
+
 
 class HistoriqueAbonnement(models.Model):
     entreprise = models.ForeignKey(Entreprise, on_delete=models.CASCADE)
